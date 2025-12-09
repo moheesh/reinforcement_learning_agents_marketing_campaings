@@ -1,0 +1,646 @@
+{
+  "name": "Marketing Mix RL Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -240,
+        -144
+      ],
+      "id": "f9d22948-2870-48bf-9528-ce02ac1bb3f6",
+      "name": "When chat message received",
+      "webhookId": "d3a716ef-86fe-45a1-b7bf-a898199f52da"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=**User Input:**\n{{ $json.chatInput }}\n\nYou are an API router for a Marketing Mix Optimization system. Analyze the user input and pick ONE tool.\n\n**Step 1: Pick the tool**\n\n*GET tools (run directly):*\n- `data_summary` → show data overview, statistics, date range, channels available\n- `data_actions` → list all possible budget allocation strategies and actions\n- `data_states` → show state space configuration, how context is defined\n- `mmm_summary` → show MMM model metrics, R², channel contributions, ROI estimates\n- `pipeline_status` → check if system is ready, what components are loaded\n- `rl_policy` → show what the RL agent learned, recommended actions per state\n\n*POST tools (check inputs first):*\n- `data_process` → load CSV files, build state/action spaces, initialize system\n- `mmm_train` → train Marketing Mix Model to learn channel effectiveness\n- `mmm_predict` → predict revenue given specific channel budget allocation\n- `mmm_marginal_roi` → find which channel gives best return for next dollar spent\n- `mmm_what_if` → simulate impact of moving budget from one channel to another, something like what if\n- `rl_train` → train reinforcement learning agents (Q-learning and/or UCB)\n- `recommend` → get optimal budget allocation for given budget and month\n- `recommend_compare` → compare Q-learning vs UCB recommendations side by side\n- `pipeline_run` → run complete pipeline: load data → train MMM → train RL\n\n**Step 2: Check required inputs**\n\n| Tool | Required Inputs | Format |\n|------|-----------------|--------|\n| `rl_policy` | algorithm | Path param: `q` or `ucb` |\n| `mmm_predict` | allocation, month, nps | `{\"allocation\": {\"TV\": #, \"Digital\": #, \"Sponsorship\": #, \"Content.Marketing\": #, \"Online.marketing\": #, \"Affiliates\": #, \"SEM\": #, \"Radio\": #, \"Other\": #}, \"context\": {\"month\": #, \"nps\": #}}` |\n| `mmm_marginal_roi` | allocation | `{\"allocation\": {\"TV\": #, \"Digital\": #, \"Sponsorship\": #, \"Content.Marketing\": #, \"Online.marketing\": #, \"Affiliates\": #, \"SEM\": #, \"Radio\": #, \"Other\": #}}` |\n| `mmm_what_if` | from_channel, to_channel, amount | `{\"from_channel\": \"STRING\", \"to_channel\": \"STRING\", \"amount\": #}` |\n| `rl_train` | algorithm | `{\"algorithm\": \"STRING\"}` where STRING is `q`, `ucb`, or `both` |\n| `recommend` | budget, month | `{\"budget\": #, \"month\": #}` |\n| `recommend_compare` | budget, month | `{\"budget\": #, \"month\": #}` |\n\n**Step 3: Take action**\n\n- If GET tool with no inputs needed → Run it\n- If GET tool with inputs (rl_policy) → Check if algorithm specified, then run it\n- If POST tool with all inputs present → Format the inputs and run it\n- If tool with missing inputs → DO NOT run. Ask user for the missing inputs.\n- If input doesn't match any tool → List available tools and ask user to rephrase.\n\n**When no tool matches, respond with:**\n\"I can help you with:\n\n**Data & System:**\n• Data summary - view data overview and available channels\n• Data actions - see all possible allocation strategies\n• Data states - view state space configuration\n• Pipeline status - check if system is ready\n• Data process - initialize and load data\n• Pipeline run - run full pipeline (data → MMM → RL)\n\n**Marketing Mix Model:**\n• MMM summary - view model performance and channel ROIs\n• MMM train - train the marketing mix model\n• MMM predict - predict revenue for a specific allocation\n• MMM marginal ROI - find best channel for next dollar\n• MMM what-if - simulate moving budget between channels\n\n**Reinforcement Learning:**\n• RL train - train Q-learning and/or UCB agents\n• RL policy - view learned policy (Q-learning or UCB)\n\n**Recommendations:**\n• Recommend - get optimal budget allocation\n• Recommend compare - compare Q-learning vs UCB\n\nWhat would you like to do?\"",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        144,
+        -144
+      ],
+      "id": "d9869161-9439-4669-af36-d26090c86c08",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        96
+      ],
+      "id": "57c150d3-9ef5-4c08-85f0-ab6a02553971",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wY1gLU56o6I3qviQ",
+          "name": "Gemini msh acc 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:8000/data/summary",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        144,
+        96
+      ],
+      "id": "4c672851-ca21-468d-b868-d0a83c581a05",
+      "name": "data_summary"
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:8000/data/actions",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        144,
+        224
+      ],
+      "id": "e36f473d-e691-4eae-b6d9-04a9b0f9cfe7",
+      "name": "data_actions"
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:8000/data/states",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        -176,
+        384
+      ],
+      "id": "fd91724a-735f-4733-afaa-389d12b486d8",
+      "name": "data_states"
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:8000/pipeline/status",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        272,
+        96
+      ],
+      "id": "a1200b43-d595-460c-847b-3e7053145d17",
+      "name": "pipeline_status"
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:8000/rl/policy/{{ $fromAI('algorithm', 'q or ucb') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        400,
+        96
+      ],
+      "id": "739a0612-ec0c-485f-9863-4a3c0ff3389b",
+      "name": "rl_policy"
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:8000/mmm/summary",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        272,
+        224
+      ],
+      "id": "7ab7913b-ef72-433e-b866-5e220688f436",
+      "name": "mmm_summary"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/data/process",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $fromAI('requestBody', 'JSON object with reload boolean') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        400,
+        224
+      ],
+      "id": "64de7e0d-6d87-41cc-b5c6-04d1b55436fd",
+      "name": "data_process"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/mmm/train",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $fromAI('requestBody', 'JSON object with retrain boolean') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        528,
+        224
+      ],
+      "id": "0048a962-dec7-45b9-80bc-d6de3087f5aa",
+      "name": "mmm_train"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/mmm/predict",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $fromAI('requestBody', 'JSON object with allocation (object with TV, Digital, Sponsorship, Content.Marketing, Online.marketing, Affiliates, SEM, Radio, Other) and context (object with month, nps)') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        0,
+        384
+      ],
+      "id": "4382166b-2a67-4e38-b176-d264752b1f3e",
+      "name": "mmm_predict"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/mmm/marginal-roi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $fromAI('requestBody', 'JSON object with allocation (object with TV, Digital, Sponsorship, Content.Marketing, Online.marketing, Affiliates, SEM, Radio, Other)') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        176,
+        384
+      ],
+      "id": "77c55857-96ec-424e-adbd-3d17d0f6d573",
+      "name": "mmm_marginal_roi"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/mmm/what-if",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $fromAI('requestBody', 'JSON object with current_allocation, from_channel, to_channel, amount') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        352,
+        384
+      ],
+      "id": "a9545130-3820-421a-8462-25291cd598f7",
+      "name": "mmm_what_if"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/rl/train",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $fromAI('requestBody', 'JSON object with algorithm string: q, ucb, or both') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        528,
+        384
+      ],
+      "id": "37e29070-6e12-4680-a149-517e2ee063cf",
+      "name": "rl_train"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/recommend",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $fromAI('requestBody', 'JSON object with budget, month') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        528,
+        96
+      ],
+      "id": "b703ab7a-2b73-4c91-9aa4-99e5f9fc706f",
+      "name": "recommend"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/recommend/compare",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $fromAI('requestBody', 'JSON object with budget, month') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        144,
+        592
+      ],
+      "id": "5b2c0fc6-671e-4326-8b56-ee82a17e6cbb",
+      "name": "recommend_compare"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/pipeline/run",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $fromAI('requestBody', 'JSON object with retrain_mmm and retrain_rl booleans') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        272,
+        592
+      ],
+      "id": "4e339cab-8307-4514-8103-58e7a0760d37",
+      "name": "pipeline_run"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        864
+      ],
+      "id": "3e8ac639-d83b-40a1-8d99-62b52f696a87",
+      "name": "Manual Trigger - Train Pipeline"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/data/process",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"reload\": true}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -96,
+        864
+      ],
+      "id": "9739e435-26bf-4e02-881b-fe6fd52263a3",
+      "name": "1. Process Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/mmm/train",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"retrain\": true}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        864
+      ],
+      "id": "8cefc75e-27ae-435e-96a2-d84c7ba1b53a",
+      "name": "2. Train MMM"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/rl/train",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"algorithm\": \"both\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        864
+      ],
+      "id": "a7690a5f-c3d9-4b1f-bbdb-b06417403f34",
+      "name": "3. Train RL"
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:8000/pipeline/status",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        656,
+        864
+      ],
+      "id": "b345f80b-3634-4ff3-b7d7-d8b8f03a5963",
+      "name": "4. Check Status"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        208
+      ],
+      "id": "66507dba-f683-477d-8552-4729154e567d",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "data_summary": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "data_actions": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "data_states": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pipeline_status": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "rl_policy": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mmm_summary": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "data_process": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mmm_train": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mmm_predict": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mmm_marginal_roi": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mmm_what_if": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "rl_train": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "recommend": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "recommend_compare": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pipeline_run": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger - Train Pipeline": {
+      "main": [
+        [
+          {
+            "node": "1. Process Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. Process Data": {
+      "main": [
+        [
+          {
+            "node": "2. Train MMM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Train MMM": {
+      "main": [
+        [
+          {
+            "node": "3. Train RL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. Train RL": {
+      "main": [
+        [
+          {
+            "node": "4. Check Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fe535bd6-823f-4923-80ef-df2c7827e6b8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f97052f1ea2888b39c5c1f72c06048652719c83da08a75ccf7a0e068cd23210"
+  },
+  "id": "oBKekCDrbSJmKbel",
+  "tags": []
+}
