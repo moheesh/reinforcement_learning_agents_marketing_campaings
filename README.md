@@ -5,15 +5,16 @@ An end-to-end system that combines Marketing Mix Modeling (MMM) with Reinforceme
 ## Table of Contents
 
 1. [Project Overview](#project-overview)
-2. [System Requirements](#system-requirements)
-3. [Installation Instructions](#installation-instructions)
-4. [Setup and Configuration](#setup-and-configuration)
-5. [Running the Application](#running-the-application)
-6. [Documentation of Reinforcement Learning Approach](#documentation-of-reinforcement-learning-approach)
-7. [Test Environment and Simulation Framework](#test-environment-and-simulation-framework)
-8. [Project Structure](#project-structure)
-9. [API Reference](#api-reference)
-10. [Troubleshooting](#troubleshooting)
+2. [System Architecture](#system-architecture)
+3. [System Requirements](#system-requirements)
+4. [Installation Instructions](#installation-instructions)
+5. [Setup and Configuration](#setup-and-configuration)
+6. [Running the Application](#running-the-application)
+7. [Documentation of Reinforcement Learning Approach](#documentation-of-reinforcement-learning-approach)
+8. [Test Environment and Simulation Framework](#test-environment-and-simulation-framework)
+9. [Project Structure](#project-structure)
+10. [API Reference](#api-reference)
+11. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -37,6 +38,25 @@ This system addresses the challenge of optimal marketing budget allocation acros
 4. Trains RL policies (Q-Learning and UCB) to optimize allocations
 5. Recommends optimal budget allocations based on context
 6. Exposes API for agentic orchestration via n8n
+
+---
+
+## System Architecture
+
+![System Architecture](icons/system_architecture_diagram.png)
+
+The system follows a four-layer modular architecture:
+
+- **Presentation Layer:** n8n workflow orchestrator and natural language chat interface
+- **API Layer:** FastAPI REST endpoints for data, MMM, RL, and recommendations
+- **Core Engine Layer:** Data Processor, MMM Model, and RL Engine (Q-Learning + UCB)
+- **Persistence Layer:** Raw CSV files, serialized models, and visualization outputs
+
+### n8n Workflow
+
+![n8n Workflow](icons/n8n_workflow_diagram.png)
+
+The agentic workflow enables natural language interaction with the optimization system through 16 connected API tools.
 
 ---
 
@@ -315,8 +335,9 @@ Output files are saved to `outputs/` directory.
 marketing_mix_rl/
 |-- data/
 |   |-- raw/
-|       |-- SecondFile.csv
-|       |-- SpecialSale.csv
+|   |   |-- SecondFile.csv
+|   |   |-- SpecialSale.csv
+|   |-- README.md
 |-- models/
 |   |-- data_processor.joblib
 |   |-- mmm_model.joblib
@@ -332,6 +353,9 @@ marketing_mix_rl/
 |   |-- rl_qlearning_analysis.png
 |   |-- rl_training_rewards.png
 |   |-- rl_ucb_analysis.png
+|-- icons/
+|   |-- system_architecture_diagram.png
+|   |-- n8n_workflow_diagram.png
 |-- api.py
 |-- config.yaml
 |-- data_processor.py
