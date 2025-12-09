@@ -2,39 +2,54 @@
 
 This directory contains the raw data files required to run the Marketing Mix Optimization system.
 
-## Required Files
-
-Place the following files in the `data/raw/` folder:
-
-| File | Description |
-|------|-------------|
-| SecondFile.csv | Main marketing data with channel spend and revenue |
-| SpecialSale.csv | Promotional calendar with sale events |
-
 ## Data Source
 
-The dataset used in this project is a marketing analytics dataset containing monthly marketing spend across multiple channels and corresponding revenue figures.
+**Dataset:** DT MART: Market Mix Modeling
 
-### Option 1: Use Sample Data
+**Source:** Kaggle
 
-Sample data files are available in the project submission. Copy them to:
+**URL:** https://www.kaggle.com/datasets/datatattle/dt-mart-market-mix-modeling/data
+
+**License:** Please refer to Kaggle for dataset license and usage terms.
+
+## Required Files
+
+Download all files from the Kaggle dataset and place them in the `data/raw/` folder:
 
 ```
 data/
 └── raw/
-    ├── SecondFile.csv
-    └── SpecialSale.csv
+    ├── MediaInvestment.csv
+    ├── MonthlyNPSscore.csv
+    ├── ProductList.csv
+    ├── Sales.csv
+    ├── Secondfile.csv
+    ├── SpecialSale.csv
+    └── firstfile.csv
 ```
 
-### Option 2: Create Your Own Data
+## File Descriptions
 
-If using your own data, ensure the CSV files match the expected format below.
+| File | Description |
+|------|-------------|
+| MediaInvestment.csv | Monthly marketing spend across channels (TV, Digital, Sponsorship, etc.) |
+| MonthlyNPSscore.csv | Net Promoter Score data by month |
+| ProductList.csv | Product catalog with product details |
+| Sales.csv | Transaction-level sales data with GMV and units |
+| Secondfile.csv | Aggregated monthly data with channel spend, revenue, and NPS |
+| SpecialSale.csv | Promotional calendar with sale event dates |
+| firstfile.csv | Additional aggregated marketing data |
 
-## File Formats
+## Primary Files Used
 
-### SecondFile.csv
+The system primarily uses these two files:
 
-Main marketing data file with the following columns:
+| File | Purpose |
+|------|---------|
+| Secondfile.csv | Main input file containing monthly channel spend, total GMV, and NPS |
+| SpecialSale.csv | Promotional calendar to identify sale periods |
+
+## Secondfile.csv Columns
 
 | Column | Type | Description |
 |--------|------|-------------|
@@ -52,27 +67,25 @@ Main marketing data file with the following columns:
 | NPS | Numeric | Net Promoter Score |
 | Date | Date | Date in format YYYY-MM-DD |
 
-Example row:
-```
-month,TV,Digital,Sponsorship,Content.Marketing,Online.marketing,Affiliates,SEM,Radio,Other,total_gmv,NPS,Date
-Jan 2016,44000000,5000000,42000000,9000000,229000000,74000000,42000000,27000000,271000000,387210245,47.1,2016-01-01
-```
-
-### SpecialSale.csv
-
-Promotional calendar file with the following columns:
+## SpecialSale.csv Columns
 
 | Column | Type | Description |
 |--------|------|-------------|
 | Date | Date | Date of the sale event |
 | Sales Name | String | Name of the promotional event |
 
-Example rows:
-```
-Date,Sales Name
-2015-10-01,Diwali Sale
-2015-12-25,Christmas Sale
-2016-01-26,Republic Day Sale
+## How to Download
+
+1. Visit https://www.kaggle.com/datasets/datatattle/dt-mart-market-mix-modeling/data
+2. Click "Download" button (requires Kaggle account)
+3. Extract the downloaded ZIP file
+4. Copy all CSV files to `data/raw/` folder
+
+Alternatively, using Kaggle CLI:
+
+```bash
+kaggle datasets download -d datatattle/dt-mart-market-mix-modeling
+unzip dt-mart-market-mix-modeling.zip -d data/raw/
 ```
 
 ## Data Validation
@@ -83,13 +96,18 @@ After placing the files, verify the data by running:
 python -c "from data_processor import DataProcessor; dp = DataProcessor(); dp.load_data(); print('Data loaded successfully')"
 ```
 
+## Citation
+
+If using this dataset, please cite the original source:
+
+```
+DT MART: Market Mix Modeling
+Source: Kaggle (https://www.kaggle.com/datasets/datatattle/dt-mart-market-mix-modeling)
+Author: DataTattle
+```
+
 ## Notes
 
-- Ensure all numeric columns contain valid numbers (no text or missing values)
-- Date formats should be consistent
-- Channel names must match exactly as specified in config.yaml
-- The system expects at least 6 months of data for meaningful results
-
-## Privacy
-
-The data files are excluded from version control via .gitignore to protect potentially sensitive business information. Do not commit actual business data to public repositories.
+- Ensure all CSV files are placed in `data/raw/` folder
+- The system expects the exact column names as specified above
+- Data files are excluded from version control via .gitignore
